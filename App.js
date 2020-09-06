@@ -41,25 +41,8 @@ export default class App extends Component {
     this.webView.canGoBack = newNavState.canGoBack
     const { url } = newNavState;
 
-    // const isLocal = url.search('https://motorsportmonday.com/app/') !== -1;
-
-    // if (isLocal) {
-    // } else {
-    //   Linking.openURL(url);
-    //   return
-    // }
-
     if (!url) return;
     console.log(url)
-    // handle certain doctypes
-    if (url.includes('.pdf')) {
-      console.log('inside PDF file')
-      this.webview.stopLoading();
-      this.setState({ pdf: true, urlPdf: url })
-      // open a modal with the PDF viewer
-    }
-
-    // one way to handle a successful form submit is via query strings
     if (url.includes('?message=success')) {
       this.webview.stopLoading();
       // maybe close this view?
@@ -72,30 +55,26 @@ export default class App extends Component {
   };
 
 
+  openExternalLink(req) {
+    const isLocal = req.url.search('https://motorsportmonday.com/app/') !== -1;
+
+    if (isLocal) {
+      return true;
+    } else {
+      Linking.openURL(req.url);
+      return false;
+    }
+  }
+
+
 
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#000000', paddingTop: 15 }}>
-        {this.state.pdf ? (
-          <Pdf
-            source={this.state.urlPdf}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`number of pages: ${numberOfPages}`);
-            }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`current page: ${page}`);
-            }}
-            onError={(error) => {
-              console.log(error);
-            }}
-            onPressLink={(uri) => {
-              console.log(`Link presse: ${uri}`)
-            }}
-            style={styles.pdf} />
-        ) : (
             <WebView
               ref={(webView) => { this.webView.ref = webView; }}
               onNavigationStateChange={this.handleWebViewNavigationStateChange}
+              onShouldStartLoadWithRequest={this.openExternalLink}
               // onNavigationStateChange={(navState) => { this.webView.canGoBack = navState.canGoBack; }}
               style={styles.container}
               javaScriptEnabled={true}
@@ -115,8 +94,6 @@ export default class App extends Component {
               source={{ uri: 'https://motorsportmonday.com/app/' }}
             >
             </WebView>
-          )
-        }
       </View>
     );
   }
